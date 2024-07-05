@@ -3,6 +3,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlencode
 import streamlit as st
+import pandas as pd
 
 async def fetch_page(session, url):
     async with session.get(url) as response:
@@ -61,7 +62,10 @@ if st.button('Search'):
         with st.spinner('Searching...'):
             articles = asyncio.run(main(search_query))
             st.success(f'Found {len(articles)} articles without datasheets')
-            st.write("Артикулы производителя:")
-            st.write('\n'.join(articles))
+            if articles:
+                df = pd.DataFrame(articles, columns=["Артикулы производителя"])
+                st.dataframe(df)
+            else:
+                st.write("No articles found without datasheets.")
     else:
         st.error('Please enter a search query')
