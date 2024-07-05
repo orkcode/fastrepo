@@ -53,19 +53,19 @@ async def main(search_query):
 
         return all_results
 
-st.title('Product Article Scraper')
+st.title('Поисковик пропущенных даташитов')
 
-search_query = st.text_input('Enter search query:')
+search_query = st.text_input('Введите запрос для поиска (пример FQ14):')
 
 if st.button('Search'):
     if search_query:
-        with st.spinner('Searching...'):
+        with st.spinner('Поиск...'):
             articles = asyncio.run(main(search_query))
-            st.success(f'Found {len(articles)} articles without datasheets')
+            st.success(f'Нашел {len(articles)} позиций без датащита')
             if articles:
                 df = pd.DataFrame(articles, columns=["Артикулы производителя"])
                 st.dataframe(df)
             else:
-                st.write("No articles found without datasheets.")
+                st.write("Нет позиций без даташита")
     else:
-        st.error('Please enter a search query')
+        st.error('Пожалуйста введите запрос')
