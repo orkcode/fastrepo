@@ -1,0 +1,4 @@
+streamlit
+aiohttp
+beautifulsoup4
+lxml
