@@ -69,7 +69,8 @@ async def parse_page(session, html):
     datasheet_results = await asyncio.gather(*[task[1] for task in tasks])
     for (article, datasheet_url) in zip([task[0] for task in tasks], datasheet_results):
         if datasheet_url:
-            filename = urlparse(datasheet_url).path.split('/')[-1]
+            filename = str(urlparse(datasheet_url).path.split('/')[-1])
+            st.info(filename)
             if not filename.startswith("Datasheet-"):
                 results.append({'артикул': article, 'статус даташита': 'устаревший'})
         else:
