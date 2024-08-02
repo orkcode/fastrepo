@@ -5,6 +5,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 import time
+from io import BytesIO
 
 st.title("Поиск пропущенных и старых даташитов")
 
@@ -131,11 +132,38 @@ async def main():
     return []
 
 
+def create_excel(df):
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Sheet1')
+        workbook = writer.book
+        worksheet = writer.sheets['Sheet1']
+
+        # Автоматическая настройка ширины столбцов
+        for i, col in enumerate(df.columns):
+            column_len = max(df[col].astype(str).str.len().max(), len(col)) + 2
+            worksheet.set_column(i, i, column_len)
+
+    output.seek(0)
+    return output
+
+
 if st.button("Запустить поиск"):
     with st.spinner("Идет поиск..."):
         results = asyncio.run(main())
         if results:
             df = pd.DataFrame(results)
             st.dataframe(df)
+
+            # Создаем Excel файл
+            excel_file = create_excel(df)
+
+            # Добавляем кнопку для скачивания Excel файла
+            st.download_button(
+                label="Скачать результаты в Excel",
+                data=excel_file,
+                file_name="результаты_поиска.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
         else:
             st.write("Нет результатов или не удалось выполнить поиск.")
