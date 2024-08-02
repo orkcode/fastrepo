@@ -3,7 +3,7 @@ import asyncio
 import streamlit as st
 import pandas as pd
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 import time
 
 st.title("Поиск пропущенных и старых даташитов")
@@ -69,7 +69,8 @@ async def parse_page(session, html):
     datasheet_results = await asyncio.gather(*[task[1] for task in tasks])
     for (article, datasheet_url) in zip([task[0] for task in tasks], datasheet_results):
         if datasheet_url:
-            if not datasheet_url.startswith("Datasheet-"):
+            filename = urlparse(datasheet_url).path.split('/')[-1]
+            if not filename.startswith("Datasheet-"):
                 results.append({'артикул': article, 'статус даташита': 'устаревший'})
         else:
             results.append({'артикул': article, 'статус даташита': 'отсутствует'})
