@@ -64,15 +64,15 @@ async def parse_page(session, html):
                 product_url = urljoin(base_url, product_link['href'])
                 tasks.append((article, get_datasheet_url(session, product_url)))
         else:
-            results.append({'article': article, 'datasheet_status': 'отсутствует'})
+            results.append({'артикул': article, 'статус даташита': 'отсутствует'})
 
     datasheet_results = await asyncio.gather(*[task[1] for task in tasks])
     for (article, datasheet_url) in zip([task[0] for task in tasks], datasheet_results):
         if datasheet_url:
             if not datasheet_url.startswith("Datasheet-"):
-                results.append({'article': article, 'datasheet_status': 'устаревший'})
+                results.append({'артикул': article, 'статус даташита': 'устаревший'})
         else:
-            results.append({'article': article, 'datasheet_status': 'отсутствует'})
+            results.append({'артикул': article, 'статус даташита': 'отсутствует'})
 
     return results
 
