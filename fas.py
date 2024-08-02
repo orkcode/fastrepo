@@ -9,21 +9,29 @@ from io import BytesIO
 
 st.title("Поиск пропущенных и старых даташитов")
 
-# Запрос поискового запроса у пользователя
-search_query = st.text_input("Введите поисковый запрос:")
+# Добавляем выбор между поисковым запросом и ссылкой на категорию
+search_type = st.radio("Выберите тип поиска:", ("Поисковый запрос", "Ссылка на категорию"))
 
-base_url = 'https://ruelectronics.com/search/'
-params = {
-    'search': search_query,
-    'limit': 100,
-    'showcase': 'true'
-}
+if search_type == "Поисковый запрос":
+    search_query = st.text_input("Введите поисковый запрос:")
+    base_url = 'https://ruelectronics.com/search/'
+    params = {
+        'search': search_query,
+        'limit': 100,
+        'showcase': 'true'
+    }
+else:
+    category_url = st.text_input("Введите ссылку на категорию:")
+    base_url = category_url
+    params = {
+        'limit': 100,
+        'showcase': 'true'
+    }
 
 # Глобальные переменные для отслеживания прогресса
 total_pages = 0
 current_page = 0
 start_time = 0
-
 
 def get_next_page_url(html, base_url):
     soup = BeautifulSoup(html, 'lxml')
@@ -36,7 +44,6 @@ def get_next_page_url(html, base_url):
             return full_url
     return None
 
-
 async def get_datasheet_url(session, product_url):
     async with session.get(product_url) as response:
         html = await response.text()
@@ -45,7 +52,6 @@ async def get_datasheet_url(session, product_url):
         if datasheet_link and 'href' in datasheet_link.attrs:
             return urljoin(base_url, datasheet_link['href'])
     return None
-
 
 async def parse_page(session, html):
     global current_page
@@ -77,7 +83,6 @@ async def parse_page(session, html):
             results.append({'артикул': article, 'статус даташита': 'отсутствует'})
 
     return results
-
 
 async def fetch_all(session, initial_url):
     global total_pages, current_page, start_time
@@ -122,15 +127,17 @@ async def fetch_all(session, initial_url):
 
     return all_results
 
-
 async def main():
-    if search_query:
-        async with aiohttp.ClientSession() as session:
-            initial_url = base_url + '?' + '&'.join([f'{k}={v}' for k, v in params.items()])
-            all_results = await fetch_all(session, initial_url)
-            return all_results
-    return []
+    if search_type == "Поисковый запрос" and search_query:
+        initial_url = base_url + '?' + '&'.join([f'{k}={v}' for k, v in params.items()])
+    elif search_type == "Ссылка на категорию" and category_url:
+        initial_url = category_url
+    else:
+        return []
 
+    async with aiohttp.ClientSession() as session:
+        all_results = await fetch_all(session, initial_url)
+        return all_results
 
 def create_excel(df):
     output = BytesIO()
@@ -146,7 +153,6 @@ def create_excel(df):
 
     output.seek(0)
     return output
-
 
 if st.button("Запустить поиск"):
     with st.spinner("Идет поиск..."):
