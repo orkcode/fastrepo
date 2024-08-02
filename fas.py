@@ -70,7 +70,6 @@ async def parse_page(session, html):
     for (article, datasheet_url) in zip([task[0] for task in tasks], datasheet_results):
         if datasheet_url:
             filename = str(urlparse(datasheet_url).path.split('/')[-1])
-            st.info(filename)
             if not filename.startswith("Datasheet-"):
                 results.append({'артикул': article, 'статус даташита': 'устаревший'})
         else:
